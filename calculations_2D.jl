@@ -24,7 +24,7 @@ U = unitary_evolution(H, δτ) |> sparse
 
 # Initial state
 Ψ1_Fock = zeros(max_level + 1)
-Ψ1_Fock[3] = 1
+Ψ1_Fock[1] = 1
 Ψ2_Fock = zeros(max_level + 1)
 Ψ2_Fock[1] = 1
 
