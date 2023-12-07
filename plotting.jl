@@ -16,7 +16,7 @@ CF_black = colorant"rgba(0, 0, 0, 1.0)"
 set_theme!()
 
 CF_theme = Theme(
-    fonts = (; latex = "CMU Serif"),
+    fonts = (; latex = "CMU Serif", boldlatex = "CMU Serif Bold"),
     fontsize = 36,
     figure_padding = 10,
     Axis = (
