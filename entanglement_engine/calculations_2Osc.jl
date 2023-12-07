@@ -1,5 +1,5 @@
-include("main.jl")
-include("plotting.jl")
+include("../main.jl")
+include("../plotting.jl")
 using JLD2
 using ProgressMeter
 
@@ -219,7 +219,7 @@ lines!(
 lines!(
     ax_energy,
     δτ .* collect(1:nPts),
-    real.(Osc_E)+Interaction_Projected,
+    real.(Osc_E) + Interaction_Projected,
     color = CF_green,
     linewidth = 4,
     linestyle = :dash,
@@ -234,16 +234,16 @@ axislegend(ax_energy, orientation = :horizontal, framevisible = false, position 
 ylims!(ax_energy, (-12, 5))
 
 text!(
-        ax_energy,
-        0.01,
-        0.2,
-        text = "(i)",
-        align = (:left, :top),
-        space = :relative,
-        fontsize = 36,
-        font = :latex,
-        # color = :white,
-    )
+    ax_energy,
+    0.01,
+    0.2,
+    text = "(i)",
+    align = (:left, :top),
+    space = :relative,
+    fontsize = 36,
+    font = :latex,
+    # color = :white,
+)
 
 
 ## STATE OCCUPANCY
@@ -251,7 +251,7 @@ text!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x==(0,0) for x in fock_basis]),:],
+    Φ_prob[findfirst([x == (0, 0) for x in fock_basis]), :],
     color = CF_sky,
     linewidth = 4,
     label = L"|0,0\rangle",
@@ -260,7 +260,7 @@ lines!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x==(2,0) for x in fock_basis]),:],
+    Φ_prob[findfirst([x == (2, 0) for x in fock_basis]), :],
     color = CF_vermillion,
     linewidth = 4,
     label = L"|2,0\rangle",
@@ -269,7 +269,7 @@ lines!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x==(1,1) for x in fock_basis]),:],
+    Φ_prob[findfirst([x == (1, 1) for x in fock_basis]), :],
     color = CF_green,
     linewidth = 4,
     label = L"|1,1\rangle",
@@ -278,7 +278,7 @@ lines!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x==(2,2) for x in fock_basis]),:],
+    Φ_prob[findfirst([x == (2, 2) for x in fock_basis]), :],
     color = CF_red,
     linewidth = 4,
     label = L"|2,2\rangle",
@@ -292,16 +292,16 @@ axislegend(ax_state, orientation = :horizontal, framevisible = false, position =
 ylims!(ax_state, (-0.25, 1.01))
 
 text!(
-        ax_state,
-        0.01,
-        0.2,
-        text = "(j)",
-        align = (:left, :top),
-        space = :relative,
-        fontsize = 36,
-        font = :latex,
-        # color = :white,
-    )
+    ax_state,
+    0.01,
+    0.2,
+    text = "(j)",
+    align = (:left, :top),
+    space = :relative,
+    fontsize = 36,
+    font = :latex,
+    # color = :white,
+)
 
 fig
 
