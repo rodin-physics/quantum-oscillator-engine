@@ -11,6 +11,7 @@ dirs = [
     "data/2Osc",
     "data/2D",
     "data/3D_Osc_Engine/",
+    "data/3D_Osc_Engine/animation",
     "data/3D_Osc_Engine/compression_expansion",
     "data/3D_Osc_Engine/benchmarking",
     "data/3D_Osc_Engine/engine_operation",
@@ -154,6 +155,12 @@ function mode_interaction(n, m, l, d, σ)
         Inf,
         atol = 1e-5,
     )[1]
+    return res
+end
+
+## PISTON ENGINE
+function compression_interaction(n, m, l, p)
+    res = quadgk(x -> Ψ(x, n, l) * Ψ(x, m, l), -Inf, p, atol = 1e-5)[1]
     return res
 end
 
