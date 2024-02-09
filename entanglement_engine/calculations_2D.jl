@@ -39,19 +39,30 @@ states[:, 1] = current_state
 @showprogress for ii = 2:nPts
     states[:, ii] = U * states[:, ii-1]
 end
+
 # ENERGY
 # System energy as a function of time
 E_tot = [states[:, ii]' * H * states[:, ii] for ii = 1:nPts]
 # Interaction energy as a function of time
 Interaction = [states[:, ii]' * Φ_mat * states[:, ii] for ii = 1:nPts]
-Osc_E = [states[:, ii]' * diagm(energy_diagonal) * states[:, ii] for ii = 1:nPts]
 # Oscillator energies at all times
-Φ_val = diag(Φ_mat)
-Φ_prob = abs.(states) .^ 2
-Interaction_Projected = [dot(Φ_prob[:, ii], Φ_val) for ii = 1:nPts] |> real
-Interaction_Projected_Excited =
-    [dot(Φ_prob[2:end, ii], Φ_val[2:end]) / sum(Φ_prob[2:end, ii]) for ii = 1:nPts] |> real
-Entropy = [-dot(Φ_prob[:, ii], log.(Φ_prob[:, ii] .+ 1e-10)) for ii = 1:nPts]
+Osc_E = [states[:, ii]' * diagm(energy_diagonal) * states[:, ii] for ii = 1:nPts]
+
+# Projection energies
+Φ_val = diag(Φ_mat) |> collect |> real  # Interaction energies of two-oscillator eigenstates
+H_val = diag(H) |> collect |> real      # Total energies of two-oscillator eigenstates
+
+State_prob = abs.(states) .^ 2          # Probabilities of each Fock state pair
+
+Interaction_Projected = [dot(State_prob[:, ii], Φ_val) for ii = 1:nPts] |> real
+E_tot_Projected = [dot(State_prob[:, ii], H_val) for ii = 1:nPts] |> real
+
+Work = Osc_E .- 1 |> real
+Heat_input_1 = -Interaction |> real
+Heat_input_2 = Interaction_Projected - Interaction |> real
+
+η_single = Work ./ Heat_input_1
+η_double = Work ./ Heat_input_2
 
 ## FIGURES
 set_theme!(CF_theme)
@@ -60,7 +71,7 @@ Fock_xs = [v[1] for v in fock_basis]
 Fock_ys = [v[2] for v in fock_basis]
 xs = range(-5, 5, length = 100) |> collect
 
-fig = Figure(resolution = (1200, 1600))
+fig = Figure(resolution = (1200, 2000))
 
 main_grid = fig[2, 1] = GridLayout()
 supertitle = fig[1, 1]
@@ -79,6 +90,7 @@ rowsize!(fig.layout, 1, Relative(1 / 40))
 wf_grid = main_grid[1:2, 1]
 energy_grid = main_grid[3, 1]
 state_grid = main_grid[4, 1]
+efficiency_grid = main_grid[5, 1]
 
 fock_grid = wf_grid[1, 1:19] = GridLayout()
 real_grid = wf_grid[2, 1:19] = GridLayout()
@@ -97,6 +109,8 @@ ax_real = [Axis(real_grid[1, ii], aspect = DataAspect()) for ii in eachindex(τs
 
 ax_energy = Axis(energy_grid[1, 1])
 ax_state = Axis(state_grid[1, 1])
+
+ax_efficiency = Axis(efficiency_grid[1, 1])
 
 lab_fock = ["(a)", "(b)", "(c)", "(d)"]
 lab_real = ["(e)", "(f)", "(g)", "(h)"]
@@ -185,7 +199,7 @@ lines!(
     real.(E_tot),
     color = CF_green,
     linewidth = 4,
-    label = L"\langle\hat{H}\rangle(\tau)",
+    label = L"\langle\hat{H}\rangle",
 )
 
 lines!(
@@ -194,7 +208,7 @@ lines!(
     real.(Interaction),
     color = CF_vermillion,
     linewidth = 4,
-    label = L"\langle\hat{\Phi}\rangle(\tau)",
+    label = L"\langle\hat{\Phi}\rangle",
 )
 
 lines!(
@@ -203,7 +217,7 @@ lines!(
     real.(Osc_E),
     color = CF_sky,
     linewidth = 4,
-    label = L"\langle\hat{H}_0\rangle(\tau)",
+    label = L"\langle\hat{H}_0\rangle",
 )
 
 lines!(
@@ -213,7 +227,7 @@ lines!(
     color = CF_vermillion,
     linewidth = 4,
     linestyle = :dash,
-    label = L"\Phi_\mathrm{proj}(\tau)",
+    label = L"\bar{\Phi}",
 )
 
 lines!(
@@ -223,7 +237,7 @@ lines!(
     color = CF_green,
     linewidth = 4,
     linestyle = :dash,
-    label = L"H_\mathrm{proj}(\tau)",
+    label = L"\bar{H}",
 )
 
 xlims!(ax_energy, (0, 1.01))
@@ -251,7 +265,7 @@ text!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x == (0, 0) for x in fock_basis]), :],
+    State_prob[findfirst([x == (0, 0) for x in fock_basis]), :],
     color = CF_sky,
     linewidth = 4,
     label = L"|0,0\rangle",
@@ -260,7 +274,7 @@ lines!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x == (2, 0) for x in fock_basis]), :],
+    State_prob[findfirst([x == (2, 0) for x in fock_basis]), :],
     color = CF_vermillion,
     linewidth = 4,
     label = L"|2,0\rangle",
@@ -269,19 +283,19 @@ lines!(
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x == (2, 2) for x in fock_basis]), :],
+    State_prob[findfirst([x == (1, 1) for x in fock_basis]), :],
     color = CF_green,
     linewidth = 4,
-    label = L"|2,2\rangle",
+    label = L"|1,1\rangle",
 )
 
 lines!(
     ax_state,
     δτ .* collect(1:nPts),
-    Φ_prob[findfirst([x == (4, 0) for x in fock_basis]), :],
+    State_prob[findfirst([x == (2, 2) for x in fock_basis]), :],
     color = CF_red,
     linewidth = 4,
-    label = L"|4,0\rangle",
+    label = L"|2,2\rangle",
 )
 
 xlims!(ax_state, (0, 1.01))
@@ -303,6 +317,52 @@ text!(
     # color = :white,
 )
 
+## EFFICIENCY
+
+lines!(
+    ax_efficiency,
+    δτ .* collect(1:nPts),
+    η_single,
+    color = CF_sky,
+    linewidth = 4,
+    label = L"\eta_\mathrm{single}",
+)
+
+lines!(
+    ax_efficiency,
+    δτ .* collect(1:nPts),
+    η_double,
+    color = CF_vermillion,
+    linewidth = 4,
+    label = L"\eta_\mathrm{double}",
+)
+
+xlims!(ax_efficiency, (0, 1.01))
+ax_state.xticks = 0:0.5:1
+ax_efficiency.xlabel = L"\tau"
+ax_efficiency.ylabel = L"\eta"
+axislegend(ax_efficiency, orientation = :horizontal, framevisible = false, position = :rb)
+ylims!(ax_efficiency, (-0.25, 1.01))
+
+text!(
+    ax_efficiency,
+    0.01,
+    0.2,
+    text = "(k)",
+    align = (:left, :top),
+    space = :relative,
+    fontsize = 36,
+    font = :latex,
+    # color = :white,
+)
+
+
 fig
 
 save("2D_Φ0$(Φ0)_σ$(σ).pdf", fig)
+
+# s1 = sum(H[1,:] .* H[:,1] .* diag(Φ_mat)) - (H*H)[1,1] * Φ_mat[1,1]
+# s2 = sum(H[1,:] .* H[:,1] .* energy_diagonal) - (H*H)[1,1] * energy_diagonal[1]
+
+# 1/(1+s1/s2)
+# η_double
