@@ -88,20 +88,6 @@ end
 
 ## ADD CYCLE
 
-arrows!(
-    axs[1],
-    [0, 0, 2, 2] .+ 0.2,
-    [1, 4, 4, 1] .+ 0.2,
-    [0, 2, 0, -2],
-    [3, 0, -3, 0],
-    arrowsize = 16,
-    lengthscale = 1,
-    linewidth = 2,
-    linecolor = CF_green,
-    arrowcolor = CF_green,
-)
-
-
 [hideydecorations!(axs[ii]) for ii in eachindex(data)[2:end]]
 
 labs = ["(a)", "(b)", "(c)", "(d)"]
