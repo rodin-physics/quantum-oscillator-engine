@@ -16,6 +16,11 @@ dirs = [
     "data/3D_Osc_Engine/benchmarking",
     "data/3D_Osc_Engine/engine_operation",
     "data/3D_Osc_Engine/thermal_contact/",
+    "data/piston_engine/",
+    "data/piston_engine/piston_movement/",
+    "data/piston_engine/temperature_dependence/",
+    "data/piston_engine/bath_cycle/",
+    "data/piston_engine/measurement_cycle/",
 ]
 [isdir(d) ? nothing : mkdir(d) for d in dirs]
 
@@ -98,7 +103,6 @@ function RKstep(H, current_state, t, δτ)
     res =
         current_state .+
         (δτ / 90) .* (7 .* k1 .+ 32 .* k3 .+ 12 .* k4 .+ 32 .* k5 .+ 7 .* k6)
-    # res = res ./ tr(res)
     return res
 end
 
@@ -148,6 +152,7 @@ function Φ_element_2Osc(Φ, λ, (u, v), (j, k))
 end
 
 ## OTTO ENGINE
+# Function describing mode interaction with a Gaussian potential of width σ, centered at d
 function mode_interaction(n, m, l, d, σ)
     res = quadgk(
         x -> Ψ(x, n, l) * Ψ(x, m, l) * exp(-(x - d)^2 / (2 * σ^2)),
@@ -155,12 +160,6 @@ function mode_interaction(n, m, l, d, σ)
         Inf,
         atol = 1e-5,
     )[1]
-    return res
-end
-
-## PISTON ENGINE
-function compression_interaction(n, m, l, p)
-    res = quadgk(x -> Ψ(x, n, l) * Ψ(x, m, l), -Inf, p, atol = 1e-5)[1]
     return res
 end
 
@@ -188,17 +187,3 @@ end
 #     end
 # end
 # overlap(0, 100, 1 / sqrt(5))
-
-# r = [(Ψ(x, 70, 1)) for x = -1:0.01:1]
-# n = 62
-# 1 / √(big(2^n) * factorial(big(n)))
-
-# function Ψ1(x, n, l)
-#     res =
-#         basis(Hermite, n)(x / l) * exp(-x^2 / 2 / l^2 - log(2) * n / 2) /
-#         √(factorial(big(n))) / √(l) / π^(1 / 4)
-#     return res
-# end
-
-# Ψ(2, 62, 1) ≈ Ψ1(2, 62, 1)
-# Float64(Ψ(2, 62, 1)) / Float64(Ψ1(2, 62, 1))

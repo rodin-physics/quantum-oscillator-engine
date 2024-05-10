@@ -77,4 +77,3 @@ for ii in eachindex(data)
     # save("data/3D_Osc_Engine/animation/frame_$(lpad(ii, 3, '0')).png", fig)
 
 end
-
